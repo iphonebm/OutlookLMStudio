@@ -47,7 +47,7 @@
 
 ### Installation Rapide
 
-1. **Téléchargez** la dernière version depuis [Releases](https://github.com/VOTRE_USERNAME/OutlookLMStudio/releases)
+1. **Téléchargez** la dernière version depuis [Releases](https://github.com/iphonebm/OutlookLMStudio/releases)
 
 2. **Décompressez** l'archive
 
@@ -62,7 +62,7 @@
 
 ```bash
 # Cloner le repository
-git clone https://github.com/VOTRE_USERNAME/OutlookLMStudio.git
+git clone https://github.com/iphonebm/OutlookLMStudio.git
 cd OutlookLMStudio
 
 # Ouvrir dans Visual Studio
@@ -125,24 +125,6 @@ Accédez aux paramètres via le bouton "Paramètres" dans le volet :
 | **Température** | Créativité des réponses (0.0-1.0) | `0.7` |
 | **Max Tokens** | Longueur maximale de la réponse | `2000` |
 | **Timeout** | Délai d'attente par email (secondes) | `30` |
-| **Template de Prompt** | Personnalisez le style des réponses | Modifiable |
-
-### Template de Prompt
-
-Personnalisez le template pour adapter le style des réponses :
-
-```
-Système : Vous êtes un assistant professionnel. 
-Veuillez générer une réponse courtoise et professionnelle à cet email.
-Conservez le même niveau de formalité que l'email original.
-
-Email à traiter :
-{emailContent}
-
-Générez une réponse professionnelle et pertinente.
-```
-
-Le placeholder `{emailContent}` sera remplacé par le contenu de l'email.
 
 ---
 
@@ -204,9 +186,6 @@ OutlookLMStudio/
 - Workload "Office/SharePoint development"
 
 # Compiler
-dotnet build OutlookLMStudio.csproj
-
-# Ou via Visual Studio
 Build ? Rebuild Solution
 ```
 
@@ -245,10 +224,6 @@ Build ? Rebuild Solution
 1. **Augmentez le timeout** dans les paramètres (60 secondes)
 2. **Vérifiez les logs** : `%APPDATA%\OutlookLMStudio\logs.txt`
 3. **Testez avec un modèle plus petit** (ex: Phi-2)
-
-### Plus de solutions
-
-Consultez le fichier `TROUBLESHOOTING.md` ou ouvrez une [Issue](https://github.com/VOTRE_USERNAME/OutlookLMStudio/issues).
 
 ---
 
@@ -321,16 +296,14 @@ Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plu
 
 ## ?? Contact & Support
 
-- ?? **Bugs** : [Ouvrir une Issue](https://github.com/VOTRE_USERNAME/OutlookLMStudio/issues)
-- ?? **Discussions** : [GitHub Discussions](https://github.com/VOTRE_USERNAME/OutlookLMStudio/discussions)
+- ?? **Bugs** : [Ouvrir une Issue](https://github.com/iphonebm/OutlookLMStudio/issues)
+- ?? **Discussions** : [GitHub Discussions](https://github.com/iphonebm/OutlookLMStudio/discussions)
 
 ---
 
 <div align="center">
 
 **Fait avec ?? pour automatiser vos emails**
-
-[Documentation](docs/) • [Changelog](CHANGELOG.md)
 
 Si ce projet vous est utile, n'hésitez pas à lui donner une ? !
 
