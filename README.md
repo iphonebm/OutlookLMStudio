@@ -247,29 +247,6 @@ Script (optionnel) :
 
 ---
 
-## 🗺️ Roadmap
-
-### 1.4.0
-- Intégration Ollama  
-- Multi-templates  
-- Détection auto de la langue  
-- Sélecteur de modèles  
-
-### 2.0.0
-- Support Teams  
-- Analyse de sentiment  
-- Follow-up intelligent  
-- Cache hors-ligne  
-
----
-
-## 🧪 Idées Futures
-- Résumé de fil avant réponse  
-- Priorisation automatique des emails  
-- Export statistiques d’usage  
-
----
-
 ## 📄 Licence
 MIT — voir [LICENSE](LICENSE).
 
