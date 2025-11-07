@@ -1,310 +1,326 @@
-# ?? OutlookLMStudio
+# üìß OutlookLMStudio
 
-> GÈnÈrez automatiquement des rÈponses d'emails professionnelles avec LMStudio directement depuis Outlook
+> FR: G√©n√©rez automatiquement des r√©ponses d'emails professionnelles dans Microsoft Outlook via des mod√®les IA locaux (LMStudio). 100% priv√©.
+> EN: Generate professional email replies in Microsoft Outlook using local AI language models through LMStudio. 100% private.
 
 [![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.7.2-blue.svg)](https://dotnet.microsoft.com/)
-[![Office](https://img.shields.io/badge/Microsoft%20Outlook-2013%2B-orange.svg)](https://www.microsoft.com/en-us/microsoft-365/outlook)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
-
-**OutlookLMStudio** est un complÈment Microsoft Outlook qui exploite la puissance de LMStudio pour gÈnÈrer des rÈponses d'emails professionnelles en quelques secondes, tout en gardant vos donnÈes **100% locales**.
+[![Outlook](https://img.shields.io/badge/Outlook-2013%2B-orange.svg)](https://www.microsoft.com/microsoft-365/outlook)
+[![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg)](https://www.microsoft.com/windows)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
-## ? FonctionnalitÈs
-
-### ?? GÈnÈration Intelligente de RÈponses
-- **GÈnÈration unique** : SÈlectionnez un email et gÈnÈrez une rÈponse personnalisÈe
-- **GÈnÈration multiple** : SÈlectionnez plusieurs emails et traitez-les en batch
-- **Templates personnalisables** : Adaptez le style des rÈponses selon vos besoins
-
-### ??? Interfaces Multiples
-- **Volet des t‚ches** : Interface simple et intuitive
-- **Menu contextuel** : Clic droit sur n'importe quel email
-- **Bouton Ribbon** : AccËs rapide depuis la barre d'outils Outlook
-
-### ?? ConfidentialitÈ & SÈcuritÈ
-- **100% local** : Aucune donnÈe envoyÈe sur Internet
-- **ModËles LLM locaux** : Utilisez vos propres modËles via LMStudio
-- **ContrÙle total** : Vous gardez le contrÙle de vos donnÈes
-
-### ? Performance
-- **Traitement par lots** : GÈnÈrez des rÈponses pour 20+ emails en quelques minutes
-- **Barre de progression** : Visualisez l'avancement en temps rÈel
-- **Gestion des erreurs** : Rapport dÈtaillÈ des succËs/Èchecs
+## üåç Langues / Languages
+FR par d√©faut. English section below.
 
 ---
 
-## ?? Installation
+## üìë Sommaire
+1. üìå Pr√©sentation  
+2. üöÄ Fonctionnalit√©s  
+3. üõ†Ô∏è Installation  
+4. ‚öôÔ∏è Configuration LMStudio  
+5. ‚úâÔ∏è Utilisation  
+6. üß¨ Param√®tres & Template  
+7. ‚ö° Performances & Mod√®les  
+8. üß± Structure & D√©veloppement  
+9. üîí S√©curit√© & Confidentialit√©  
+10. ü©∫ D√©pannage / FAQ  
+11. üßæ Logs & Diagnostic  
+12. ü§ù Contribution  
+13. üó∫Ô∏è Roadmap  
+14. üß™ Id√©es Futures  
+15. üìÑ Licence  
+16. üôè Remerciements  
+17. üÜò Support  
+18. üá¨üáß English Section  
 
-### PrÈrequis
+---
 
-- **Windows 10/11**
-- **Microsoft Outlook** (2013, 2016, 2019, 2021, 365)
-- **.NET Framework 4.7.2** ou supÈrieur
-- **VSTO Runtime** (gÈnÈralement dÈj‡ installÈ avec Office)
-- **LMStudio** ([tÈlÈcharger ici](https://lmstudio.ai/))
+## üìå Pr√©sentation
+OutlookLMStudio est un compl√©ment Outlook (VSTO) qui acc√©l√®re la r√©daction de vos emails en g√©n√©rant automatiquement des r√©ponses contextualis√©es. Tout fonctionne localement via LMStudio : aucune donn√©e ne quitte votre machine.
 
-### Installation Rapide
+Cas d‚Äôusage :
+- Support client / helpdesk  
+- Pr√©qualification commerciale  
+- R√©ponses internes r√©currentes  
+- Traitement batch d‚Äôarri√©r√©s (backlog)
 
-1. **TÈlÈchargez** la derniËre version depuis [Releases](https://github.com/iphonebm/OutlookLMStudio/releases)
+---
 
-2. **DÈcompressez** l'archive
+## üöÄ Fonctionnalit√©s
+| Cat√©gorie        | D√©tails |
+|------------------|---------|
+| G√©n√©ration       | R√©ponses uniques ou par lot (20+ emails) |
+| Int√©gration      | Volet, menu contextuel, bouton Ribbon |
+| Mod√®les          | Tout mod√®le charg√© dans LMStudio local |
+| Personnalisation | Template de prompt modifiable |
+| Param√®tres       | Temp√©rature, tokens max, timeout |
+| Performance      | Barre de progression batch |
+| Robustesse       | Gestion fine des erreurs, logs |
+| Confidentialit√©  | 100% local, aucune API externe |
 
-3. **ExÈcutez** `INSTALL.bat` en tant qu'administrateur :
-   ```cmd
-   Clic droit sur INSTALL.bat ? ExÈcuter en tant qu'administrateur
-   ```
+### ‚úÖ Points forts
+- Gain de temps massif  
+- Qualit√© adaptable selon le mod√®le choisi  
+- Aucune fuite de donn√©es sensibles  
 
-4. **Lancez Outlook** - Le complÈment apparaÓtra automatiquement
+---
 
-### Installation depuis les sources
+## üõ†Ô∏è Installation
 
+### Pr√©requis
+| Composant | Version / Remarque |
+|-----------|--------------------|
+| Windows   | 10 / 11 |
+| Outlook   | 2013, 2016, 2019, 2021, 365 |
+| .NET      | .NET Framework 4.7.2+ |
+| VSTO      | Runtime (souvent d√©j√† pr√©sent) |
+| LMStudio  | [T√©l√©charger](https://lmstudio.ai/) |
+| Visual Studio (optionnel) | 2019/2022 pour compiler |
+
+### Installation rapide
+1. T√©l√©charger la release : [Releases](https://github.com/iphonebm/OutlookLMStudio/releases)  
+2. Extraire l‚Äôarchive  
+3. Clic droit `INSTALL.bat` ‚Üí Ex√©cuter en tant qu‚Äôadministrateur  
+4. Ouvrir Outlook  
+
+### Depuis les sources
 ```bash
-# Cloner le repository
 git clone https://github.com/iphonebm/OutlookLMStudio.git
 cd OutlookLMStudio
-
-# Ouvrir dans Visual Studio
 start OutlookLMStudio.sln
-
-# Compiler le projet
-Build ? Rebuild Solution
-
-# Installer
-INSTALL.bat (en tant qu'administrateur)
+# Build ‚Üí Rebuild Solution
+INSTALL.bat  # admin
 ```
+D√©sinstallation : `UNINSTALL.bat`.
 
 ---
 
-## ?? Utilisation
-
-### Configuration de LMStudio
-
-1. **Lancez LMStudio**
-2. **Chargez un modËle** (ex: Mistral 7B, Llama 2, etc.)
-3. **DÈmarrez le serveur local** :
-   - Onglet "Local Server"
-   - Cliquez "Start Server"
-   - Par dÈfaut sur `http://localhost:1234`
-
-### GÈnÈrer une RÈponse Simple
-
-1. **SÈlectionnez** un email dans Outlook
-2. **MÈthode 1** - Volet des t‚ches :
-   - Cliquez sur "GÈnÈrer une rÈponse"
-3. **MÈthode 2** - Menu contextuel :
-   - Clic droit ? "GÈnÈrer RÈponse(s) avec LMStudio"
-4. **VÈrifiez** le brouillon crÈÈ et modifiez si nÈcessaire
-5. **Envoyez** !
-
-### GÈnÈration Multiple (Batch)
-
-1. **SÈlectionnez plusieurs emails** :
-   - `Ctrl + Clic` : SÈlection multiple
-   - `Shift + Clic` : Plage d'emails
-2. **Clic droit** ? "GÈnÈrer RÈponse(s) avec LMStudio"
-3. **Confirmez** dans la boÓte de dialogue
-4. **Attendez** la fin du traitement (barre de progression)
-5. **Consultez** les brouillons crÈÈs
-
-**Exemple** : Traitez 20 emails en ~2 minutes au lieu de 1h40 manuellement ! ??
+## ‚öôÔ∏è Configuration LMStudio
+1. Ouvrir LMStudio  
+2. Charger un mod√®le (ex : Mistral 7B, Llama 2, Phi-2)  
+3. Onglet ‚ÄúLocal Server‚Äù ‚Üí Start Server  
+4. URL par d√©faut : `http://localhost:1234`  
+5. V√©rifier : `http://localhost:1234/v1/models`  
 
 ---
 
-## ?? Configuration
+## ‚úâÔ∏è Utilisation
 
-### ParamËtres du ComplÈment
+### R√©ponse simple
+1. S√©lectionner un email  
+2. Volet ‚Üí ‚ÄúG√©n√©rer une r√©ponse‚Äù OU clic droit ‚Üí ‚ÄúG√©n√©rer R√©ponse(s)‚Äù  
+3. Revoir le brouillon  
+4. Envoyer  
 
-AccÈdez aux paramËtres via le bouton "ParamËtres" dans le volet :
+### Batch
+1. S√©lection multiple (`Ctrl + clic` / `Shift + clic`)  
+2. Clic droit ‚Üí G√©n√©rer  
+3. Suivre la barre de progression  
+4. Ouvrir brouillons g√©n√©r√©s  
 
-| ParamËtre | Description | DÈfaut |
-|-----------|-------------|--------|
-| **URL API** | Adresse du serveur LMStudio | `http://localhost:1234` |
-| **ModËle** | Nom du modËle ‡ utiliser | SÈlection depuis LMStudio |
-| **TempÈrature** | CrÈativitÈ des rÈponses (0.0-1.0) | `0.7` |
-| **Max Tokens** | Longueur maximale de la rÈponse | `2000` |
-| **Timeout** | DÈlai d'attente par email (secondes) | `30` |
-
----
-
-## ?? Performances
-
-### Temps de Traitement
-
-| Nombre d'Emails | Temps Moyen | Gain vs Manuel |
-|-----------------|-------------|----------------|
-| 1 email | ~3-5 secondes | ~90% |
-| 10 emails | ~30-50 secondes | ~95% |
-| 20 emails | ~1-2 minutes | ~98% |
-
-*BasÈ sur un modËle Mistral 7B sur un PC moyen*
-
-### ModËles RecommandÈs
-
-| ModËle | Taille | Vitesse | QualitÈ | Usage |
-|--------|--------|---------|---------|-------|
-| **Mistral 7B** | 7B | ??? | ???? | RecommandÈ |
-| **Llama 2 7B** | 7B | ??? | ??? | Bon |
-| **Phi-2** | 2.7B | ???? | ??? | Rapide |
-| **Llama 2 13B** | 13B | ?? | ????? | Haute qualitÈ |
+> Astuce : ~20 emails ‚âà 2 minutes (vs >1h manuel).
 
 ---
 
-## ??? DÈveloppement
+## üß¨ Param√®tres & Template
+| Param√®tre       | Description                        | D√©faut |
+|-----------------|------------------------------------|--------|
+| URL API         | Endpoint LMStudio                  | http://localhost:1234 |
+| Mod√®le          | Nom du mod√®le charg√©               | (dynamique) |
+| Temp√©rature     | Cr√©ativit√© (0‚Äì1)                   | 0.7 |
+| Max Tokens      | Longueur maximale de la r√©ponse    | 2000 |
+| Timeout (s)     | D√©lai max par email                | 30 |
+| Prompt Template | Style r√©daction                    | Personnalisable |
 
-### Structure du Projet
+### Exemple de template
+```
+Syst√®me : Vous √™tes un assistant professionnel.
+G√©n√©rez une r√©ponse courtoise et adapt√©e au ton de l'email original.
 
+Email source :
+{emailContent}
+
+R√©digez une r√©ponse pertinente, concise et professionnelle.
+```
+`{emailContent}` sera remplac√© automatiquement.
+
+---
+
+## ‚ö° Performances & Mod√®les
+
+| Emails | Temps (approx) | Gain vs manuel |
+|--------|----------------|----------------|
+| 1      | 3‚Äì5 s          | ~90%           |
+| 10     | 30‚Äì50 s        | ~95%           |
+| 20     | 60‚Äì120 s       | ~98%           |
+
+| Mod√®le       | Taille | Vitesse | Qualit√© | Usage |
+|--------------|--------|---------|---------|-------|
+| Mistral 7B   | 7B     | Bonne   | Bonne   | G√©n√©ral |
+| Llama 2 7B   | 7B     | Moyenne | Bonne   | Ton neutre |
+| Phi-2        | 2.7B   | Tr√®s rapide | Moyenne | Volume |
+| Llama 2 13B  | 13B    | Plus lente | Haute | Nuance |
+
+---
+
+## üß± Structure & D√©veloppement
 ```
 OutlookLMStudio/
-??? ThisAddIn.cs              # Point d'entrÈe principal
-??? TaskPaneControl.cs        # Interface du volet
-??? SettingsForm.cs           # FenÍtre de paramËtres
-??? LMStudioSettings.cs       # Gestion de la configuration
-??? ContextMenuHandler.cs     # Gestion du menu contextuel
-??? LMStudioRibbon.cs         # Interface Ribbon
-??? Models/
-?   ??? LMStudioResponse.cs   # ModËles de donnÈes API
-??? INSTALL.bat               # Script d'installation
-??? UNINSTALL.bat             # Script de dÈsinstallation
-??? README.md                 # Ce fichier
+  ThisAddIn.cs
+  TaskPaneControl.cs
+  SettingsForm.cs
+  LMStudioSettings.cs
+  ContextMenuHandler.cs
+  LMStudioRibbon.cs
+  Models/
+    LMStudioResponse.cs
+  INSTALL.bat
+  UNINSTALL.bat
+  README.md
 ```
 
-### Technologies UtilisÈes
-
-- **.NET Framework 4.7.2**
-- **VSTO (Visual Studio Tools for Office)**
-- **Microsoft Office Interop**
-- **Newtonsoft.Json** - SÈrialisation JSON
-- **LMStudio API** - Interface avec les modËles LLM
+### Stack Technique
+- C# (.NET Framework 4.7.2)  
+- VSTO / Office Interop  
+- PowerShell (scripts de diagnostic)  
+- Batch (scripts d‚Äôinstallation)  
+- Newtonsoft.Json  
+- LMStudio Local REST API  
 
 ### Compilation
-
 ```bash
-# PrÈrequis
-- Visual Studio 2019/2022
-- Workload "Office/SharePoint development"
-
-# Compiler
-Build ? Rebuild Solution
+dotnet build OutlookLMStudio.csproj
 ```
 
 ---
 
-## ?? DÈpannage
-
-### Le complÈment n'apparaÓt pas dans Outlook
-
-1. **VÈrifiez l'installation** :
-   - Fichier ? Options ? ComplÈments
-   - Cherchez "OutlookLMStudio" dans la liste
-
-2. **S'il est dÈsactivÈ** :
-   - GÈrer : ComplÈments dÈsactivÈs ? Atteindre
-   - SÈlectionnez OutlookLMStudio
-   - Cliquez "Toujours activer"
-
-3. **RÈinstallez** :
-   ```cmd
-   UNINSTALL.bat (en admin)
-   INSTALL.bat (en admin)
-   ```
-
-### Erreur "LMStudio n'est pas accessible"
-
-1. **VÈrifiez que LMStudio est dÈmarrÈ**
-2. **VÈrifiez qu'un modËle est chargÈ**
-3. **Testez l'API** :
-   ```
-   Ouvrez http://localhost:1234/v1/models dans un navigateur
-   ```
-
-### Les rÈponses sont vides
-
-1. **Augmentez le timeout** dans les paramËtres (60 secondes)
-2. **VÈrifiez les logs** : `%APPDATA%\OutlookLMStudio\logs.txt`
-3. **Testez avec un modËle plus petit** (ex: Phi-2)
+## üîí S√©curit√© & Confidentialit√©
+- Aucune requ√™te vers Internet  
+- Donn√©es uniquement locales  
+- D√©pend des politiques internes Outlook / Windows  
+- Pour donn√©es sensibles : privil√©gier des mod√®les stables (Mistral, Llama 2)  
 
 ---
 
-## ?? Logs & Diagnostic
+## ü©∫ D√©pannage / FAQ
 
-Les logs sont enregistrÈs automatiquement :
+| Probl√®me               | Cause probable        | Solution |
+|------------------------|-----------------------|----------|
+| Add-in absent          | D√©sactiv√© par Outlook | Activer dans Options ‚Üí Compl√©ments |
+| ‚ÄúLMStudio inaccessible‚Äù | Serveur non lanc√©     | D√©marrer Local Server |
+| R√©ponses vides         | Timeout trop court     | Passer √† 60 s |
+| Batch lent             | Mod√®le trop lourd      | Essayer Phi-2 ou Mistral 7B |
+| Mod√®le introuvable     | Nom incorrect          | V√©rifier `/v1/models` |
 
+Logs : `%APPDATA%\OutlookLMStudio\logs.txt`  
+Diagnostic : `DIAGNOSTIC.ps1` (si pr√©sent)
+
+---
+
+## üßæ Logs & Diagnostic
 ```
 %APPDATA%\OutlookLMStudio\logs.txt
 ```
-
-ExÈcutez le script de diagnostic :
-
+Script (optionnel) :
 ```powershell
-.\DIAGNOSTIC.ps1
+./DIAGNOSTIC.ps1
 ```
 
 ---
 
-## ?? Contribution
+## ü§ù Contribution
+1. Fork  
+2. Branche : `feature/NouvelleFonction`  
+3. Commit : `git commit -m "Ajoute NouvelleFonction"`  
+4. Push  
+5. Pull Request  
 
-Les contributions sont les bienvenues ! Voici comment participer :
-
-1. **Fork** le projet
-2. **CrÈez** une branche (`git checkout -b feature/AmazingFeature`)
-3. **Committez** vos changements (`git commit -m 'Add AmazingFeature'`)
-4. **Pushez** vers la branche (`git push origin feature/AmazingFeature`)
-5. **Ouvrez** une Pull Request
-
-### IdÈes de Contributions
-
-- ?? Support de nouvelles langues
-- ?? AmÈlioration de l'interface
-- ?? Support d'autres backends LLM (Ollama, GPT4All, etc.)
-- ?? Templates de rÈponses prÈdÈfinis
-- ?? Analyse de sentiment des emails
-- ? Optimisations de performance
+### Id√©es
+- Support Ollama / GPT4All  
+- Templates pr√™ts √† l‚Äôemploi  
+- Analyse de sentiment  
+- Auto-d√©tection de langue  
+- Suggestions de suivi intelligentes  
+- UI am√©lior√©e  
 
 ---
 
-## ??? Roadmap
+## üó∫Ô∏è Roadmap
 
-### Version 1.4.0 (Prochaine)
-- [ ] Support d'Ollama en plus de LMStudio
-- [ ] Templates de rÈponses multiples
-- [ ] DÈtection automatique de la langue
-- [ ] Interface de gestion des modËles
+### 1.4.0
+- Int√©gration Ollama  
+- Multi-templates  
+- D√©tection auto de la langue  
+- S√©lecteur de mod√®les  
 
-### Version 2.0.0
-- [ ] Support de Microsoft Teams
-- [ ] Analyse de sentiment
-- [ ] Suggestions de follow-up
-- [ ] Mode hors-ligne avec cache
-
----
-
-## ?? Licence
-
-Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plus de dÈtails.
+### 2.0.0
+- Support Teams  
+- Analyse de sentiment  
+- Follow-up intelligent  
+- Cache hors-ligne  
 
 ---
 
-## ?? Remerciements
-
-- **[LMStudio](https://lmstudio.ai/)** - Pour leur excellent logiciel de gestion de modËles LLM
-- **Microsoft** - Pour VSTO et les outils de dÈveloppement Office
-- **La communautÈ Open Source** - Pour les nombreuses bibliothËques utilisÈes
+## üß™ Id√©es Futures
+- R√©sum√© de fil avant r√©ponse  
+- Priorisation automatique des emails  
+- Export statistiques d‚Äôusage  
 
 ---
 
-## ?? Contact & Support
+## üìÑ Licence
+MIT ‚Äî voir [LICENSE](LICENSE).
 
-- ?? **Bugs** : [Ouvrir une Issue](https://github.com/iphonebm/OutlookLMStudio/issues)
-- ?? **Discussions** : [GitHub Discussions](https://github.com/iphonebm/OutlookLMStudio/discussions)
+---
+
+## üôè Remerciements
+- [LMStudio](https://lmstudio.ai/)  
+- Microsoft  
+- Communaut√© open source  
+
+---
+
+## üÜò Support
+- Bugs : Issues GitHub  
+- Am√©liorations : Pull Requests  
+- ‚≠ê Si utile, laissez une √©toile  
+
+---
+
+## üá¨üáß English Section
+
+### Overview
+OutlookLMStudio is an Outlook VSTO add-in that drafts professional, context-aware email replies using local LLMs served by LMStudio. No data leaves your machine.
+
+### Key Features
+- Single or batch reply generation  
+- Task pane, ribbon button, context menu integration  
+- Editable prompt template & runtime parameters  
+- Local-only execution (privacy first)  
+- Progress + granular error reporting  
+
+### Quick Start
+1. Start LMStudio Local Server (`http://localhost:1234`)  
+2. Load a model (Mistral / Llama / Phi-2)  
+3. Select email ‚Üí Generate reply  
+4. Review draft ‚Üí Send  
+
+### Parameters
+Same as French table.
+
+### Troubleshooting
+- Missing add-in ‚Üí Enable in Outlook Add-ins  
+- Empty reply ‚Üí Increase timeout  
+- Slow batch ‚Üí Use a lighter model  
+
+### Contributing
+Fork ‚Üí Branch ‚Üí Commit ‚Üí PR.
 
 ---
 
 <div align="center">
-
-**Fait avec ?? pour automatiser vos emails**
-
-Si ce projet vous est utile, n'hÈsitez pas ‡ lui donner une ? !
-
+Fait avec üí° et ‚öôÔ∏è ‚Äî Made with focus on privacy & productivity.<br/>
+Si ce projet vous aide, laissez une ‚≠ê / If useful, leave a ‚≠ê
 </div>
