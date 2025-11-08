@@ -7,6 +7,7 @@
 [![Outlook](https://img.shields.io/badge/Outlook-2013%2B-orange.svg)](https://www.microsoft.com/microsoft-365/outlook)
 [![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg)](https://www.microsoft.com/windows)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0.1-purple.svg)](#)
 
 ---
 
@@ -52,12 +53,12 @@ Cas d’usage :
 | Catégorie        | Détails |
 |------------------|---------|
 | Génération       | Réponses uniques ou par lot (20+ emails) |
-| Intégration      | Volet, menu contextuel, bouton Ribbon |
+| Intégration      | Volet, menu contextuel, boutons Ribbon (icônes dédiées) |
 | Modèles          | Tout modèle chargé dans LMStudio local |
-| Personnalisation | Template de prompt modifiable |
-| Paramètres       | Température, tokens max, timeout |
-| Performance      | Barre de progression batch |
-| Robustesse       | Gestion fine des erreurs, logs |
+| Personnalisation | Template de prompt modifiable en direct (volet) |
+| Paramètres       | Température, tokens max, timeout, stop sequences |
+| Performance      | File interne + indicateur d’état (puce) |
+| Robustesse       | Gestion fine des erreurs, logs détaillés |
 | Confidentialité  | 100% local, aucune API externe |
 
 ### ✅ Points forts
@@ -82,8 +83,15 @@ Cas d’usage :
 ### Installation rapide
 1. Télécharger la release : [Releases](https://github.com/iphonebm/OutlookLMStudio/releases)  
 2. Extraire l’archive  
-3. Clic droit `INSTALL.bat` → Exécuter en tant qu’administrateur  
+3. Clic droit `INSTALL.bat` → Exécuter en tant qu’administrateur (déseinstalle automatiquement l’ancienne version puis réinstalle)  
 4. Ouvrir Outlook  
+
+### Mise à jour / Réinstallation
+Relancer simplement `INSTALL.bat` en admin (pas besoin de UNINSTALL séparé). Le script :
+- Ferme Outlook
+- Supprime anciennes entrées registre / cache ClickOnce
+- Recherche le fichier `.vsto`
+- Installe et relance Outlook
 
 ### Depuis les sources
 ```bash
@@ -93,7 +101,6 @@ start OutlookLMStudio.sln
 # Build → Rebuild Solution
 INSTALL.bat  # admin
 ```
-Désinstallation : `UNINSTALL.bat`.
 
 ---
 
@@ -108,17 +115,18 @@ Désinstallation : `UNINSTALL.bat`.
 
 ## ✉️ Utilisation
 
+Le volet affiche directement les paramètres (plus de bouton « Paramètres ») et le template de prompt. Le bouton « Générer une réponse » a été retiré du volet : l’action se fait via le Ribbon ou le menu contextuel.
+
 ### Réponse simple
 1. Sélectionner un email  
-2. Volet → “Générer une réponse” OU clic droit → “Générer Réponse(s)”  
+2. Ribbon → « Générer Réponses » OU clic droit → « Générer Réponse(s) »  
 3. Revoir le brouillon  
 4. Envoyer  
 
-### Batch
+### Batch (multi-sélection)
 1. Sélection multiple (`Ctrl + clic` / `Shift + clic`)  
 2. Clic droit → Générer  
-3. Suivre la barre de progression  
-4. Ouvrir brouillons générés  
+3. Les brouillons réponses s’ouvrent  
 
 > Astuce : ~20 emails ≈ 2 minutes (vs >1h manuel).
 
@@ -128,10 +136,11 @@ Désinstallation : `UNINSTALL.bat`.
 | Paramètre       | Description                        | Défaut |
 |-----------------|------------------------------------|--------|
 | URL API         | Endpoint LMStudio                  | http://localhost:1234 |
-| Modèle          | Nom du modèle chargé               | (dynamique) |
+| Modèle          | Nom du modèle chargé (liste auto)  | (dynamique) |
 | Température     | Créativité (0–1)                   | 0.7 |
 | Max Tokens      | Longueur maximale de la réponse    | 2000 |
 | Timeout (s)     | Délai max par email                | 30 |
+| Stop Sequences  | Coupure génération (séparées par |) | (vide) |
 | Prompt Template | Style rédaction                    | Personnalisable |
 
 ### Exemple de template
@@ -176,17 +185,18 @@ OutlookLMStudio/
   Models/
     LMStudioResponse.cs
   INSTALL.bat
-  UNINSTALL.bat
   README.md
+  Properties/
+    AssemblyInfo.cs
+    Resources.resx (ToggleIcon32, TogglePaneIcon32)
 ```
 
 ### Stack Technique
 - C# (.NET Framework 4.7.2)  
 - VSTO / Office Interop  
-- PowerShell (scripts de diagnostic)  
-- Batch (scripts d’installation)  
 - Newtonsoft.Json  
 - LMStudio Local REST API  
+- Batch / PowerShell (scripts maintenance)  
 
 ### Compilation
 ```bash
@@ -196,35 +206,29 @@ dotnet build OutlookLMStudio.csproj
 ---
 
 ## 🔒 Sécurité & Confidentialité
-- Aucune requête vers Internet  
+- Aucune requête vers Internet externe (seulement LMStudio local)  
 - Données uniquement locales  
-- Dépend des politiques internes Outlook / Windows  
-- Pour données sensibles : privilégier des modèles stables (Mistral, Llama 2)  
+- Journalisation contrôlée (logs sous %APPDATA%)  
 
 ---
 
 ## 🩺 Dépannage / FAQ
-
-| Problème               | Cause probable        | Solution |
-|------------------------|-----------------------|----------|
-| Add-in absent          | Désactivé par Outlook | Activer dans Options → Compléments |
-| “LMStudio inaccessible” | Serveur non lancé     | Démarrer Local Server |
-| Réponses vides         | Timeout trop court     | Passer à 60 s |
-| Batch lent             | Modèle trop lourd      | Essayer Phi-2 ou Mistral 7B |
-| Modèle introuvable     | Nom incorrect          | Vérifier `/v1/models` |
+| Problème                | Cause probable                    | Solution |
+|-------------------------|-----------------------------------|----------|
+| Add-in absent           | Désactivé par Outlook             | Activer dans Options → Compléments |
+| “LMStudio inaccessible” | Serveur non lancé / URL erronée   | Démarrer LMStudio / vérifier URL |
+| Liste modèles vide      | API URL non renseignée            | Saisir URL puis cliquer ↻ |
+| Réponses vides          | Timeout trop court / modèle lent  | Augmenter timeout / choisir modèle plus petit |
+| Batch lent              | Modèle trop lourd                 | Essayer Phi-2 ou Mistral 7B |
+| Icône par défaut        | Ressource image absente           | Ajouter ToggleIcon32 / TogglePaneIcon32 dans Resources |
 
 Logs : `%APPDATA%\OutlookLMStudio\logs.txt`  
-Diagnostic : `DIAGNOSTIC.ps1` (si présent)
 
 ---
 
 ## 🧾 Logs & Diagnostic
 ```
 %APPDATA%\OutlookLMStudio\logs.txt
-```
-Script (optionnel) :
-```powershell
-./DIAGNOSTIC.ps1
 ```
 
 ---
@@ -270,26 +274,24 @@ MIT — voir [LICENSE](LICENSE).
 ### Overview
 OutlookLMStudio is an Outlook VSTO add-in that drafts professional, context-aware email replies using local LLMs served by LMStudio. No data leaves your machine.
 
-### Key Features
-- Single or batch reply generation  
-- Task pane, ribbon button, context menu integration  
-- Editable prompt template & runtime parameters  
-- Local-only execution (privacy first)  
-- Progress + granular error reporting  
+### Key Changes (Current Version 1.0.0.1)
+- Settings panel always visible in task pane
+- Removed in-pane generate button (use Ribbon or context menu)
+- Separate icons: TogglePaneIcon32 (show/hide) & ToggleIcon32 (generate)
+- Unified INSTALL.bat (auto uninstall + reinstall)
 
 ### Quick Start
 1. Start LMStudio Local Server (`http://localhost:1234`)  
 2. Load a model (Mistral / Llama / Phi-2)  
-3. Select email → Generate reply  
+3. Select email → Ribbon Generate or context menu  
 4. Review draft → Send  
 
 ### Parameters
 Same as French table.
 
 ### Troubleshooting
-- Missing add-in → Enable in Outlook Add-ins  
-- Empty reply → Increase timeout  
-- Slow batch → Use a lighter model  
+- Empty model list → Set API URL then click refresh (↻)  
+- No icon → Add resource images to Resources.resx  
 
 ### Contributing
 Fork → Branch → Commit → PR.
