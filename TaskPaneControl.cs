@@ -12,15 +12,14 @@ namespace OutlookLMStudio
     public partial class TaskPaneControl : UserControl
     {
         // UI principal
-        private Button btnGenerateResponse;
-        private Button btnSettings;
+        private Button btnGenerateResponse; // retiré de l'UI (non ajouté aux Controls)
         private FlowLayoutPanel pnlStatus; // contient la puce + file d'attente
         private Label lblDot;              // puce d'état dessinée
         private Label lblQueue;            // affiche "File d'attente: N"
         private TextBox txtPromptTemplate;
         private Label lblSelectedEmail;
 
-        // Panneau paramètres
+        // Panneau paramètres (toujours visible)
         private Panel pnlSettings;
         private TextBox txtApiUrl;
         private NumericUpDown nudTimeout;
@@ -44,13 +43,14 @@ namespace OutlookLMStudio
             InitializeComponent();
             InitializeEvents();
             LoadSettingsIntoPanel();
+            // Charger la liste des modèles au démarrage
+            _ = LoadModelsAsync();
             CheckLMStudioConnection();
         }
 
         private void InitializeComponent()
         {
-            btnGenerateResponse = new Button();
-            btnSettings = new Button();
+            // btnGenerateResponse N'EST PAS créé/ajouté pour retirer le bouton de l'UI
             pnlStatus = new FlowLayoutPanel();
             lblDot = new Label();
             lblQueue = new Label();
@@ -65,17 +65,6 @@ namespace OutlookLMStudio
             lblSelectedEmail.Dock = DockStyle.Top;
             lblSelectedEmail.Height = 40;
             lblSelectedEmail.TextAlign = ContentAlignment.MiddleLeft;
-
-            // Bouton génération
-            btnGenerateResponse.Text = "Générer une réponse";
-            btnGenerateResponse.Dock = DockStyle.Top;
-            btnGenerateResponse.Height = 30;
-            btnGenerateResponse.Enabled = false;
-
-            // Bouton paramètres
-            btnSettings.Text = "Paramètres";
-            btnSettings.Dock = DockStyle.Top;
-            btnSettings.Height = 30;
 
             // Bandeau statut (puce + file d'attente)
             pnlStatus.Dock = DockStyle.Top;
@@ -99,27 +88,25 @@ namespace OutlookLMStudio
             pnlStatus.Controls.Add(lblDot);
             pnlStatus.Controls.Add(lblQueue);
 
+            // Panneau paramètres (toujours visible maintenant)
+            pnlSettings.Dock = DockStyle.Top;
+            pnlSettings.Padding = new Padding(8);
+            pnlSettings.BorderStyle = BorderStyle.FixedSingle;
+            pnlSettings.Visible = true; // toujours visible
+            pnlSettings.AutoSize = true;
+            pnlSettings.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            BuildSettingsPanelUI();
+
             // Zone template (prompt)
             txtPromptTemplate.Multiline = true;
             txtPromptTemplate.ScrollBars = ScrollBars.Vertical;
             txtPromptTemplate.Dock = DockStyle.Fill;
             txtPromptTemplate.Text = "Veuillez générer une réponse courtoise et professionnelle à cet email.\r\nConservez le même niveau de formalité que l'email original.\r\n\r\nEmail à traiter :\r\n{emailContent}";
 
-            // Panneau paramètres
-            pnlSettings.Dock = DockStyle.Top;
-            pnlSettings.Padding = new Padding(8);
-            pnlSettings.BorderStyle = BorderStyle.FixedSingle;
-            pnlSettings.Visible = false;
-            pnlSettings.AutoSize = true;
-            pnlSettings.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            BuildSettingsPanelUI();
-
             // Ordre d'ajout (Fill en dernier)
             Controls.Add(txtPromptTemplate);
             Controls.Add(pnlSettings);
             Controls.Add(pnlStatus);
-            Controls.Add(btnSettings);
-            Controls.Add(btnGenerateResponse);
             Controls.Add(lblSelectedEmail);
 
             Name = "TaskPaneControl";
@@ -154,7 +141,7 @@ namespace OutlookLMStudio
             cboModelName.SelectionChangeCommitted += (s, e) => SaveSelectedModelImmediate();
             cboModelName.SelectedIndexChanged += (s, e) => SaveSelectedModelImmediate();
             btnRefreshModels.Text = "?"; btnRefreshModels.Location = new Point(8 + w - 60, y - 1); btnRefreshModels.Size = new Size(30, 24); btnRefreshModels.Click += async (s, e) => await LoadModelsAsync();
-            lblModelLoading.Location = new Point(8 + w - 30, y + 2); lblModelLoading.Size = new Size(26, 16); lblModelLoading.ForeColor = Color.Gray; y += 34;
+            lblModelLoading.Location = new Point(8 + w - 30, y + 2); lblModelLoading.Size = new Size(120, 16); lblModelLoading.ForeColor = Color.Gray; y += 34;
             btnSaveSettings.Text = "Enregistrer"; btnSaveSettings.Location = new Point(8, y); btnSaveSettings.Size = new Size(100, 24); btnSaveSettings.Click += BtnSaveSettings_Click;
 
             pnlSettings.Controls.AddRange(new Control[] { lblApiUrl, txtApiUrl, lblTimeout, nudTimeout, lblTemperature, nudTemperature, lblMaxTokens, nudMaxTokens, lblStopSequences, txtStopSequences, lblModelName, cboModelName, btnRefreshModels, lblModelLoading, btnSaveSettings });
@@ -162,8 +149,7 @@ namespace OutlookLMStudio
 
         private void InitializeEvents()
         {
-            btnGenerateResponse.Click += BtnGenerateResponse_Click;
-            btnSettings.Click += BtnSettings_Click;
+            // btnGenerateResponse supprimé de l'UI, ne pas attacher d'événement
             if (Globals.ThisAddIn != null) Globals.ThisAddIn.EmailSelected += ThisAddIn_EmailSelected;
         }
 
@@ -198,21 +184,21 @@ namespace OutlookLMStudio
         private void UpdateConnectionStatus(bool isConnected)
         {
             _isConnected = isConnected;
-            btnGenerateResponse.Enabled = isConnected && _currentMailItem != null && !_isProcessing;
+            // bouton retiré: ne pas gérer Enabled
             lblDot.Invalidate();
         }
 
         public void MarkProcessingStart()
         {
             _isProcessing = true;
-            btnGenerateResponse.Enabled = false;
+            // bouton retiré
             lblDot.Invalidate();
         }
 
         public void MarkProcessingEnd()
         {
             _isProcessing = false;
-            btnGenerateResponse.Enabled = _isConnected && _currentMailItem != null;
+            // bouton retiré
             lblDot.Invalidate();
         }
 
@@ -226,10 +212,16 @@ namespace OutlookLMStudio
         {
             try
             {
-                lblModelLoading.Text = "...";
+                lblModelLoading.Text = "Chargement...";
                 cboModelName.Items.Clear();
                 var settings = LMStudioSettings.LoadFromConfig();
-                string url = settings.ApiUrl?.TrimEnd('/') + "/v1/models";
+                var api = (settings.ApiUrl ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(api))
+                {
+                    lblModelLoading.Text = "URL API manquante";
+                    return;
+                }
+                string url = api.TrimEnd('/') + "/v1/models";
                 using (var client = new WebClient())
                 {
                     client.Headers[HttpRequestHeader.Accept] = "application/json";
@@ -254,9 +246,10 @@ namespace OutlookLMStudio
             }
             catch (Exception ex)
             {
+                lblModelLoading.Text = "Erreur de chargement";
                 MessageBox.Show("Impossible de récupérer la liste des modèles : " + ex.Message, "LMStudio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-            finally { lblModelLoading.Text = string.Empty; }
+            finally { if (lblModelLoading.Text == "Chargement...") lblModelLoading.Text = string.Empty; }
         }
 
         private void SaveSelectedModelImmediate()
@@ -282,30 +275,18 @@ namespace OutlookLMStudio
                 lblSelectedEmail.Text = $"Email sélectionné :\n{_currentMailItem.Subject}";
                 lblSelectedEmail.BackColor = SystemColors.Highlight;
                 lblSelectedEmail.ForeColor = SystemColors.HighlightText;
-                btnGenerateResponse.Enabled = _isConnected && !_isProcessing;
             }
             else
             {
                 lblSelectedEmail.Text = "Aucun email sélectionné";
                 lblSelectedEmail.BackColor = SystemColors.Window;
                 lblSelectedEmail.ForeColor = SystemColors.WindowText;
-                btnGenerateResponse.Enabled = false;
             }
         }
 
         private void BtnGenerateResponse_Click(object sender, EventArgs e)
         {
-            if (_currentMailItem != null && !_isProcessing && _isConnected)
-            {
-                MarkProcessingStart();
-                GenerateResponseRequested?.Invoke(this, new GenerateResponseEventArgs(_currentMailItem, txtPromptTemplate.Text));
-            }
-        }
-
-        private async void BtnSettings_Click(object sender, EventArgs e)
-        {
-            pnlSettings.Visible = !pnlSettings.Visible;
-            if (pnlSettings.Visible) await LoadModelsAsync();
+            // bouton retiré
         }
 
         private void BtnSaveSettings_Click(object sender, EventArgs e)
@@ -321,6 +302,7 @@ namespace OutlookLMStudio
                 settings.ModelName = cboModelName.SelectedItem?.ToString() ?? cboModelName.Text;
                 settings.SaveToConfig();
                 MessageBox.Show("Paramètres enregistrés.", "LMStudio", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _ = LoadModelsAsync(); // recharger la liste après sauvegarde
                 CheckLMStudioConnection();
             }
             catch (Exception ex)

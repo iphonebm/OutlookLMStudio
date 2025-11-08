@@ -1,136 +1,111 @@
 @echo off
-echo ========================================
-echo Installation OutlookLMStudio
-echo ========================================
-echo.
+setlocal enableextensions enabledelayedexpansion
 
-:: Vérifier les droits administrateur
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo ERREUR: Ce script doit etre execute en tant qu'administrateur
-    echo Clic droit sur le fichier ^> Executer en tant qu'administrateur
-    echo.
+:: ==========================================================
+:: INSTALL.bat: Désinstallation complète puis réinstallation automatique
+:: Ajout DEBUG pour diagnostiquer fermeture immédiate
+:: ==========================================================
+
+:: [0] Vérifier droits admin (fltmc plus fiable que 'net session')
+fltmc >nul 2>&1
+if errorlevel 1 (
+    echo ERREUR: Script non exécuté en mode administrateur.
+    echo Faites: Clic droit > "Exécuter en tant qu'administrateur".
     pause
     exit /b 1
 )
 
-echo [1/6] Fermeture d'Outlook...
+echo DEBUG: Elevation OK
+pause
+
+:: [1] Fermer Outlook
+echo [1/7] Fermeture d'Outlook...
 taskkill /IM outlook.exe /F >nul 2>&1
 timeout /t 2 >nul
+echo DEBUG: Outlook fermé (ou pas lancé)
 
-echo [2/6] Desinstallation de l'ancienne version (si presente)...
+:: [2] Désinstallation via Programmes et fonctionnalités (registry) + fallback WMIC
+echo [2/7] Désinstallation de l'ancienne version...
+echo DEBUG: Scan des entrées de désinstallation (Applications installées)
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$paths=@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*');" ^
+  "$apps=Get-ItemProperty -Path $paths -ErrorAction SilentlyContinue ^| Where-Object { ($_.DisplayName -like '*OutlookLMStudio*') -or ($_.DisplayName -like '*OutookLMStudio*') -or ($_.DisplayName -like '*LMStudio*') };" ^
+  "if($apps){ foreach($a in $apps){ if($a.DisplayName){ Write-Host ('   Trouvé: ' + $a.DisplayName) }; if($a.UninstallString){ Write-Host (' - Désinstallation: ' + $a.DisplayName); $cmd=$a.UninstallString.Trim(); if($cmd -match 'msiexec(\.exe)?'){ Start-Process cmd -ArgumentList '/c', ($cmd + ' /passive') -Wait } else { Start-Process cmd -ArgumentList '/c', $cmd -Wait } } } } else { Write-Host '   Aucune entrée trouvée (registry).' }" 2>nul
 
-:: Supprimer les clés de registre existantes
+:: Tentative (optionnelle) de suppression Appx si jamais installé comme application UWP (peu probable)
+echo DEBUG: Vérification Appx (UWP) pour 'OutookLMStudio'...
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$pkgs = Get-AppxPackage -AllUsers ^| Where-Object { $_.Name -like '*OutookLMStudio*' -or $_.PackageFamilyName -like '*OutookLMStudio*' }; if($pkgs){ foreach($p in $pkgs){ Write-Host (' - Remove-AppxPackage: ' + $p.Name); try { Remove-AppxPackage -AllUsers -Package $p.PackageFullName -ErrorAction Stop } catch { Write-Host ('   [Info] Echec Remove-AppxPackage: ' + $_.Exception.Message) } } } else { Write-Host '   Aucun package Appx correspondant.' }" 2>nul
+
+echo DEBUG: Fallback WMIC (peut échouer silencieusement sur versions récentes)
+wmic product where "Name like '%%OutlookLMStudio%%' or Name like '%%OutookLMStudio%%'" call uninstall /nointeractive >nul 2>&1
+
+:: [3] Nettoyage des clés de registre Add-in et VSTO
+echo [3/7] Nettoyage du registre (Outlook/VSTO)...
 reg delete "HKCU\Software\Microsoft\Office\Outlook\Addins\OutlookLMStudio" /f >nul 2>&1
 reg delete "HKCU\Software\Microsoft\VSTO\Security\Inclusion\{75384258-9a61-432d-b12a-d48c8e01ce3a}" /f >nul 2>&1
 reg delete "HKLM\Software\Microsoft\Office\Outlook\Addins\OutlookLMStudio" /f >nul 2>&1
 reg delete "HKLM\SOFTWARE\Microsoft\VSTO\Security\Inclusion\{75384258-9a61-432d-b12a-d48c8e01ce3a}" /f >nul 2>&1
+echo DEBUG: Registre nettoyé
 
-:: Nettoyer le cache ClickOnce
-set CLICKONCE_CACHE=%LOCALAPPDATA%\Apps\2.0
+:: [4] Nettoyage du cache ClickOnce
+echo [4/7] Nettoyage du cache ClickOnce...
+set "CLICKONCE_CACHE=%LOCALAPPDATA%\Apps\2.0"
 if exist "%CLICKONCE_CACHE%" (
-    echo Nettoyage du cache ClickOnce...
     rd /s /q "%CLICKONCE_CACHE%" >nul 2>&1
+    echo DEBUG: Cache ClickOnce supprimé
+) else (
+    echo DEBUG: Cache ClickOnce absent
 )
 
-timeout /t 2 >nul
-
-echo [3/6] Verification du fichier d'installation...
-set VSTO_PATH=%~dp0bin\Debug\OutlookLMStudio.vsto
-echo Chemin recherche: %VSTO_PATH%
-
-if not exist "%VSTO_PATH%" (
-    echo.
-    echo ERREUR: Fichier OutlookLMStudio.vsto introuvable !
-    echo.
-    echo Le fichier devrait etre ici: %VSTO_PATH%
-    echo.
-    echo SOLUTION:
-    echo 1. Ouvrez Visual Studio
-    echo 2. Build ^> Clean Solution
-    echo 3. Build ^> Rebuild Solution
-    echo 4. Attendez la fin de la compilation
-    echo 5. Relancez ce script
-    echo.
-    dir /b "%~dp0bin\Debug\*.vsto" 2>nul
-    if %errorLevel% neq 0 (
-        echo Aucun fichier .vsto trouve dans bin\Debug\
-    ) else (
-        echo Fichiers .vsto trouves dans bin\Debug\:
-        dir /b "%~dp0bin\Debug\*.vsto"
-    )
+:: [5] Détection du fichier VSTO
+echo [5/7] Détection du fichier d'installation (.vsto)...
+set "BASE=%~dp0"
+if "%BASE:~-1%"=="\" set "BASE=%BASE:~0,-1%"
+set "VSTO_PATH="
+echo DEBUG: BASE=%BASE%
+if not defined VSTO_PATH if exist "%BASE%\OutlookLMStudio.vsto" set "VSTO_PATH=%BASE%\OutlookLMStudio.vsto"
+if not defined VSTO_PATH if exist "%BASE%\bin\Debug\OutlookLMStudio.vsto" set "VSTO_PATH=%BASE%\bin\Debug\OutlookLMStudio.vsto"
+if not defined VSTO_PATH if exist "%BASE%\bin\Release\OutlookLMStudio.vsto" set "VSTO_PATH=%BASE%\bin\Release\OutlookLMStudio.vsto"
+if not defined VSTO_PATH if exist "%BASE%\..\OutlookLMStudio.vsto" set "VSTO_PATH=%BASE%\..\OutlookLMStudio.vsto"
+if not defined VSTO_PATH (
+  for /r "%BASE%" %%f in (*.vsto) do ( set "VSTO_PATH=%%f" & goto :foundvsto )
+)
+if not defined VSTO_PATH (
+  for /r "%BASE%\.." %%f in (*.vsto) do ( set "VSTO_PATH=%%f" & goto :foundvsto )
+)
+:foundvsto
+echo DEBUG: VSTO_PATH=%VSTO_PATH%
+if not defined VSTO_PATH (
+    echo ERREUR: Fichier .vsto introuvable.
+    dir /b "%BASE%\*.vsto" 2>nul
+    dir /b "%BASE%\..\*.vsto" 2>nul
     echo.
     pause
     exit /b 1
 )
+echo Fichier VSTO: "%VSTO_PATH%"
 
-echo Fichier trouve: %VSTO_PATH%
-echo Taille: 
-dir "%VSTO_PATH%" | find "OutlookLMStudio.vsto"
-echo.
-
-echo [4/6] Installation du complement VSTO...
-echo.
-echo Une fenetre d'installation va s'ouvrir...
-echo Cliquez sur le bouton "Installer" pour continuer.
-echo.
-echo Chemin: %VSTO_PATH%
-echo.
-
-:: Lancer le fichier VSTO sans attendre (car start /wait peut bloquer)
+:: [6] Installation VSTO
+echo [6/7] Lancement de l'installation...
 start "" "%VSTO_PATH%"
+echo Patientez (15 s)...
+timeout /t 15 >nul
 
-echo.
-echo Patientez pendant l'installation (environ 10 secondes)...
-timeout /t 10 >nul
-
-echo [5/6] Verification de l'installation...
-timeout /t 2 >nul
-
-:: Vérifier si le complément est enregistré
-reg query "HKCU\Software\Microsoft\Office\Outlook\Addins\OutlookLMStudio" >nul 2>&1
-if %errorLevel% equ 0 (
-    echo ? Complement enregistre avec succes dans le registre (HKCU) !
-) else (
-    reg query "HKLM\Software\Microsoft\Office\Outlook\Addins\OutlookLMStudio" >nul 2>&1
-    if %errorLevel% equ 0 (
-        echo ? Complement enregistre avec succes dans le registre (HKLM) !
-    ) else (
-        echo.
-        echo ATTENTION: Le complement ne semble pas encore enregistre.
-        echo.
-        echo Cela peut signifier:
-        echo 1. L'installation est encore en cours (patientez 30 secondes)
-        echo 2. Vous avez annule l'installation
-        echo 3. Il y a eu une erreur d'installation
-        echo.
-        echo Verifiez manuellement dans Outlook ^> Fichier ^> Options ^> Complements
-        echo.
-    )
+echo Vérification enregistrement...
+reg query "HKCU\Software\Microsoft\Office\Outlook\Addins\OutlookLMStudio" >nul 2>&1 && echo [OK] Addin HKCU || (
+  reg query "HKLM\Software\Microsoft\Office\Outlook\Addins\OutlookLMStudio" >nul 2>&1 && echo [OK] Addin HKLM || echo ATTENTION: Addin non trouvé dans le registre.
 )
 
-echo [6/6] Lancement d'Outlook...
+:: [7] Démarrer Outlook
+echo [7/7] Démarrage d'Outlook...
 start outlook.exe
 
 echo.
 echo ========================================
-echo Installation terminee !
+echo Réinstallation terminée.
 echo ========================================
-echo.
-echo Le complement "LMStudio Assistant" devrait apparaitre dans Outlook
-echo.
-echo Si le volet n'apparait pas :
-echo 1. Fichier ^> Options ^> Complements
-echo 2. En bas : Gerer: Complements COM ^> Atteindre
-echo 3. Cochez OutlookLMStudio
-echo.
-echo Si le complement apparait dans "Complements desactives" :
-echo 1. Gerer: Complements desactives ^> Atteindre
-echo 2. Selectionnez OutlookLMStudio
-echo 3. Cliquez "Toujours activer ce complement"
-echo 4. Redemarrez Outlook
-echo.
-echo Pour desinstaller : Executez UNINSTALL.bat
-echo Pour les logs : %APPDATA%\OutlookLMStudio\logs.txt
-echo.
+
+echo DEBUG: Script terminé - fenêtre maintenue ouverte.
 pause
+endlocal
