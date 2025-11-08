@@ -239,7 +239,6 @@
     <None Include="INSTALL.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="OutlookLMStudio_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -259,7 +258,6 @@
       <SubType>Code</SubType>
     </Compile>
     <None Include="README.md" />
-    <None Include="SUMMARY.md" />
     <None Include="ThisAddIn.Designer.xml">
       <DependentUpon>ThisAddIn.cs</DependentUpon>
     </None>
