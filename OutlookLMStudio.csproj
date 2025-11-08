@@ -199,7 +199,6 @@
     <Compile Include="LMStudioRibbon.cs" />
     <Compile Include="LMStudioSettings.cs" />
     <Compile Include="Models\LMStudioResponse.cs" />
-    <Compile Include="PromptBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -213,17 +212,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <None Include="App.config" />
-    <None Include="CODE_ANALYSIS.md" />
-    <None Include="CONTEXT_MENU_SETUP.md" />
     <None Include="Diagnostic.ps1" />
-    <None Include="DIAGNOSTIC_EMAIL_SELECTION.md" />
-    <None Include="FIX_CLICKONCE_TXT_ERROR.md" />
-    <None Include="FIX_DEPLOYMENT_ERROR.md" />
-    <None Include="FIX_ERROR_400.md" />
-    <None Include="GUIDE_AJOUT_COM.md" />
-    <None Include="INSTALL.bat" />
-    <None Include="INSTALLATION_GUIDE.md" />
-    <None Include="MULTI_EMAIL_GENERATION.md" />
     <None Include="OutlookLMStudio_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -234,19 +223,13 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="SettingsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="TaskPaneControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
     </Compile>
-    <None Include="QUICK_FIX.md" />
     <None Include="README.md" />
-    <None Include="README_DEPLOYMENT.md" />
-    <None Include="README_FINAL.md" />
     <None Include="SUMMARY.md" />
     <None Include="ThisAddIn.Designer.xml">
       <DependentUpon>ThisAddIn.cs</DependentUpon>
@@ -255,11 +238,16 @@
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
     <AppDesigner Include="Properties\" />
-    <None Include="TROUBLESHOOTING.md" />
-    <None Include="UNINSTALL.bat" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GITHUB_DESCRIPTION.txt" />
+    <EmbeddedResource Include="Assets\ToggleIcon32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\TogglePaneIcon32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

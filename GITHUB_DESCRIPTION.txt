@@ -1,1 +1,0 @@
-Un complément Microsoft Outlook qui utilise LMStudio pour générer automatiquement des réponses d'emails professionnelles via IA locale. Traitement unique ou multiple (batch), menu contextuel, 100% privé. Gagnez 90% de temps sur vos réponses emails !

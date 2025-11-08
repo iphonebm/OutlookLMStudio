@@ -170,7 +170,6 @@ Rédigez une réponse pertinente, concise et professionnelle.
 OutlookLMStudio/
   ThisAddIn.cs
   TaskPaneControl.cs
-  SettingsForm.cs
   LMStudioSettings.cs
   ContextMenuHandler.cs
   LMStudioRibbon.cs
