@@ -222,6 +222,7 @@
     <Compile Include="LMStudioRibbon.cs" />
     <Compile Include="LMStudioSettings.cs" />
     <Compile Include="Models\LMStudioResponse.cs" />
+    <Compile Include="PromptBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -248,6 +249,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="TaskPaneControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -273,6 +277,9 @@
     <EmbeddedResource Include="Assets\TogglePaneIcon32.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="GITHUB_DESCRIPTION.txt" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

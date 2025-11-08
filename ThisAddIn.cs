@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using Office = Microsoft.Office.Core;
@@ -64,14 +63,8 @@ namespace OutlookLMStudio
             return new LMStudioRibbon();
         }
 
-        private void UpdateQueueIndicator()
-        {
-            try { _taskPaneControl?.UpdateQueueLength(_requestQueue.Count + (_isProcessing ? 1 : 0)); } catch { }
-        }
-
         public void OnGenerateResponseRequested(GenerateResponseEventArgs e)
         {
-            // route interne directe
             TaskPaneControl_GenerateResponseRequested(this, e);
         }
 
@@ -392,45 +385,18 @@ namespace OutlookLMStudio
             }
         }
 
-        // Ajout d'un helper pour accéder au contrôle et marquer les états
-        private TaskPaneControl TaskPane => _taskPaneControl;
-
-        private string CleanModelArtifacts(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return text;
-            // Supprimer les blocs de métadonnées spécifiques (<|channel|> etc.)
-            var cleaned = Regex.Replace(text, @"<\|[^>]+\|>", string.Empty); // retire <|xxx|>
-            // Retirer balises combinées éventuelles
-            cleaned = cleaned.Replace("<|start|>", string.Empty)
-                             .Replace("<|end|>", string.Empty)
-                             .Replace("assistant", string.Empty); // si modèle injecte 'assistant'
-            // Supprimer préfixes type 'analysis' ou 'final' séparés par deux points potentiels
-            cleaned = Regex.Replace(cleaned, @"^(analysis|final)\s*:?\s*", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            // Enlever lignes vides en tête
-            cleaned = cleaned.Trim();
-            // Si encore des traces internes au début (ex: 'Need reply in French...'), couper avant premier saut de ligne suivi d'une phrase normale.
-            var firstLineEnd = cleaned.IndexOf('\n');
-            if (firstLineEnd > -1 && cleaned.Substring(0, Math.Min(firstLineEnd + 80, cleaned.Length)).ToLower().Contains("need reply"))
-            {
-                cleaned = cleaned.Substring(firstLineEnd + 1).TrimStart();
-            }
-            return cleaned;
-        }
-
-        private async void TaskPaneControl_GenerateResponseRequested(object sender, GenerateResponseEventArgs e)
+        private async void TaskPaneControl_GenerateResponseRequested(object sender, GenerateResponseEventArgs e
+)
         {
             try
             {
-                TaskPane?.MarkProcessingStart();
                 Logger.Log($"=== Début génération pour: {e.MailItem.Subject} ===");
                 
                 var request = new GenerationRequest(e.MailItem, e.PromptTemplate);
                 _requestQueue.Enqueue(request);
-                UpdateQueueIndicator();
                 await ProcessQueueAsync();
 
                 var response = await request.CompletionSource.Task;
-                response = CleanModelArtifacts(response);
                 if (!string.IsNullOrEmpty(response))
                 {
                     var replyMail = e.MailItem.Reply();
@@ -441,37 +407,35 @@ namespace OutlookLMStudio
                 else
                 {
                     Logger.Log("ATTENTION: Réponse vide reçue de LMStudio");
-                    // plus de MessageBox pour la fin
+                    MessageBox.Show("La réponse générée est vide. Vérifiez votre modèle LMStudio.",
+                        "Réponse vide", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (System.Exception ex)
             {
                 Logger.Log("ERREUR lors de la génération de la réponse", ex);
-                // conserver l’erreur, mais ne pas ouvrir de confirmation Oui/Non
-                MessageBox.Show($"Erreur lors de la génération de la réponse :\n\n{ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                TaskPane?.MarkProcessingEnd();
-                UpdateQueueIndicator();
+                MessageBox.Show($"Erreur lors de la génération de la réponse :\n\n{ex.Message}\n\nConsultez les logs pour plus de détails.",
+                    "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async Task ProcessQueueAsync()
         {
-            if (_isProcessing) { UpdateQueueIndicator(); return; }
+            if (_isProcessing)
+            {
+                Logger.Log("Traitement déjà en cours, requête en attente");
+                return;
+            }
 
             await _processingSemaphore.WaitAsync();
             try
             {
                 _isProcessing = true;
-                UpdateQueueIndicator();
                 while (_requestQueue.TryDequeue(out var request))
                 {
                     try
                     {
                         Logger.Log("Traitement d'une requête de la file");
-                        UpdateQueueIndicator();
                         var response = await GenerateResponse(request.MailItem, request.PromptTemplate);
                         request.CompletionSource.SetResult(response);
                     }
@@ -480,16 +444,11 @@ namespace OutlookLMStudio
                         Logger.Log("Erreur lors du traitement d'une requête", ex);
                         request.CompletionSource.SetException(ex);
                     }
-                    finally
-                    {
-                        UpdateQueueIndicator();
-                    }
                 }
             }
             finally
             {
                 _isProcessing = false;
-                UpdateQueueIndicator();
                 _processingSemaphore.Release();
             }
         }
