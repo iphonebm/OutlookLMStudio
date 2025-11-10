@@ -1,10 +1,11 @@
-name: .NET Core Desktop
-
+# Workflow pour construire un projet VSTO / .NET Framework sur windows-latest
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+
+name: VSTO CI Build
 
 jobs:
   build:
@@ -16,7 +17,6 @@ jobs:
 
     env:
       Solution_Name: OutlookLMStudio.csproj
-      VSTOOLS_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VisualStudio\v17.0'
 
     steps:
     - name: Checkout
@@ -24,45 +24,125 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-
-    # Add MSBuild to the PATH
-    - name: Setup MSBuild.exe
+    - name: Setup MSBuild (adds MSBuild to PATH)
       uses: microsoft/setup-msbuild@v2
 
-        # Create Office Tools directory
-    - name: Create Office Tools Directory
+    - name: Find Visual Studio and set VSToolsPath
       shell: pwsh
       run: |
-        $officeToolsPath = "C:\Program Files\dotnet\sdk\9.0.306\Microsoft\VisualStudio\v17.0\OfficeTools"
-        New-Item -Path $officeToolsPath -ItemType Directory -Force
-        
-    # Download and Copy Office Tools targets
-    - name: Setup Office Tools
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        if (-not (Test-Path $vswhere)) {
+          Write-Error "vswhere.exe not found on runner"
+          exit 1
+        }
+        $installationPath = & $vswhere -latest -products * -property installationPath
+        if (-not $installationPath) {
+          Write-Error "No Visual Studio installation found via vswhere"
+          exit 1
+        }
+        Write-Host "Found Visual Studio at: $installationPath"
+        $vstools = Join-Path $installationPath "MSBuild\Microsoft\VisualStudio\v17.0"
+        "VSToolsPath=$vstools" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        Write-Host "VSToolsPath set to $vstools"
+
+    - name: Debug: show VSToolsPath contents (first lines)
       shell: pwsh
       run: |
-        $targetPath = "C:\Program Files\dotnet\sdk\9.0.306\Microsoft\VisualStudio\v17.0\OfficeTools"
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/microsoft/VSSDK-Extensibility-Samples/master/OfficeTools/Microsoft.VisualStudio.Tools.Office.targets" -OutFile "$targetPath\Microsoft.VisualStudio.Tools.Office.targets"
+        Write-Host "VSToolsPath = $env:VSToolsPath"
+        if (Test-Path $env:VSToolsPath) {
+          Get-ChildItem -Path $env:VSToolsPath -Recurse -Force -ErrorAction SilentlyContinue | Select-Object FullName -First 50 | ForEach-Object { Write-Host $_.FullName }
+        } else {
+          Write-Host "VSToolsPath does not exist on runner"
+        }
 
-    # Restore dependencies
-    - name: Restore dependencies
-      run: dotnet restore ${{ env.Solution_Name }}
-
-    # Build the project
-    - name: Build
-      run: dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
+    - name: Import signing certificate (if provided)
+      shell: pwsh
       env:
-        VSToolsPath: 'C:\Program Files\dotnet\sdk\9.0.306\Microsoft\VisualStudio\v17.0'
+        PFX_SECRET: ${{ secrets.Base64_Encoded_Pfx }}
+        PFX_PASSWORD: ${{ secrets.Pfx_Key }}
+      run: |
+        # This step is safe: it only runs logic and will skip import if secrets are missing.
+        if (-not $env:PFX_SECRET -or -not $env:PFX_PASSWORD) {
+          Write-Host "No PFX secrets provided; skipping certificate import (will disable signing in CI)."
+          exit 0
+        }
+        try {
+          $pfxBytes = [Convert]::FromBase64String($env:PFX_SECRET)
+        } catch {
+          Write-Error "Base64_Encoded_Pfx is invalid Base64."
+          exit 1
+        }
+        $pfxPath = Join-Path $env:RUNNER_TEMP "signing.pfx"
+        [IO.File]::WriteAllBytes($pfxPath, $pfxBytes)
+        $securePwd = ConvertTo-SecureString $env:PFX_PASSWORD -AsPlainText -Force
+        $cert = Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password $securePwd
+        if (-not $cert) { Write-Error "Failed to import certificate"; exit 1 }
+        Write-Host "Imported cert thumbprint: $($cert.Thumbprint)"
+        "SigningCertThumbprint=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        "IMPORTED_PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
 
-    # Upload build artifacts
-    - name: Upload build artifacts
+    - name: Restore with MSBuild (if project supports it)
+      shell: pwsh
+      env:
+        VSToolsPath: ${{ env.VSToolsPath }}
+      run: |
+        $solution = "${{ env.Solution_Name }}"
+        Write-Host "Running msbuild /t:Restore for $solution"
+        & msbuild $solution /t:Restore /p:Configuration=${{ matrix.configuration }} /p:VisualStudioVersion=17.0 /p:VSToolsPath="$env:VSToolsPath" || Write-Host "Restore finished (msbuild may return non-zero for some project types)"
+
+    - name: Build with MSBuild (verbose log)
+      shell: pwsh
+      env:
+        VSToolsPath: ${{ env.VSToolsPath }}
+        SigningCertThumbprint: ${{ env.SigningCertThumbprint }}
+      run: |
+        $config = '${{ matrix.configuration }}'
+        $solution = '${{ env.Solution_Name }}'
+        $log = Join-Path $env:RUNNER_TEMP 'msbuild.log'
+        Write-Host "MSBuild starting for $solution ($config)"
+        # Build command: if a signing cert was imported, pass its thumbprint; otherwise disable signatures for CI
+        if ($env:SigningCertThumbprint) {
+          Write-Host "Using manifest cert thumbprint: $env:SigningCertThumbprint"
+          & msbuild $solution /t:Rebuild /p:Configuration=$config /p:VisualStudioVersion=17.0 /p:VSToolsPath="$env:VSToolsPath" /p:ManifestCertificateThumbprint="$env:SigningCertThumbprint" /m /fl /flp:logfile="$log";verbosity=diagnostic
+        } else {
+          Write-Host "No signing certificate: disabling manifest/assembly signing for CI"
+          & msbuild $solution /t:Rebuild /p:Configuration=$config /p:VisualStudioVersion=17.0 /p:VSToolsPath="$env:VSToolsPath" /p:SignManifests=false /p:SignAssembly=false /m /fl /flp:logfile="$log";verbosity=diagnostic
+        }
+        $exit = $LASTEXITCODE
+        Write-Host "MSBuild exit code: $exit"
+        if (Test-Path $log) {
+          Write-Host "==== Last 200 lines of msbuild.log ===="
+          Get-Content $log -Tail 200 | ForEach-Object { Write-Host $_ }
+          "MSBUILD_LOG=$log" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        } else {
+          Write-Host "msbuild.log not found"
+        }
+        if ($exit -ne 0) { exit $exit }
+
+    - name: Upload MSBuild log
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.configuration }}-build
+        name: msbuild-log
+        path: ${{ env.MSBUILD_LOG }}
+
+    - name: Upload build artifacts (binaries)
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: msbuild-binaries-${{ matrix.configuration }}
         path: |
           **/bin/${{ matrix.configuration }}/**
           **/obj/${{ matrix.configuration }}/**
+
+    - name: Cleanup imported certificate and temporary pfx
+      if: always()
+      shell: pwsh
+      run: |
+        if ($env:SigningCertThumbprint) {
+          Write-Host "Removing imported cert with thumbprint $env:SigningCertThumbprint"
+          Get-ChildItem Cert:\CurrentUser\My\ | Where-Object Thumbprint -eq $env:SigningCertThumbprint | Remove-Item -Force -ErrorAction SilentlyContinue
+        } else {
+          Write-Host "No imported cert to remove"
+        }
+        if ($env:IMPORTED_PFX_PATH -and (Test-Path $env:IMPORTED_PFX_PATH)) { Remove-Item -Path $env:IMPORTED_PFX_PATH -Force -ErrorAction SilentlyContinue }
