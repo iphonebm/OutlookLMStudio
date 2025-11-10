@@ -283,17 +283,17 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
+  <!-- </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
-   <!-- <PropertyGroup>
+   <PropertyGroup>
      <SignManifests>true</SignManifests>
-  </PropertyGroup> -->
-  <!-- <PropertyGroup>
-    <ManifestKeyFile>OutlookLMStudio_TemporaryKey.pfx</ManifestKeyFile> 
-  </PropertyGroup> -->
-  <PropertyGroup>
-    CF319ACCBA29854E95F6B7490651B193C430B8B7</ManifestCertificateThumbprint>
   </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>OutlookLMStudio_TemporaryKey.pfx</ManifestKeyFile> 
+  </PropertyGroup> 
+  <PropertyGroup> 
+    CF319ACCBA29854E95F6B7490651B193C430B8B7</ManifestCertificateThumbprint>
+  </PropertyGroup> -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Include additional build rules for an Office application add-in. -->
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
