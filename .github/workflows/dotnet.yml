@@ -96,8 +96,8 @@ jobs:
           VSToolsPath: ${{ env.VSToolsPath }}
           SigningCertThumbprint: ${{ env.SigningCertThumbprint }}
         run: |
-          $config = '${{ matrix.configuration }}'
-          $solution = '${{ env.Solution_Name }}'
+          $config = "${{ matrix.configuration }}"
+          $solution = "${{ env.Solution_Name }}"
           $log = Join-Path $env:RUNNER_TEMP 'msbuild.log'
           Write-Host "MSBuild starting for $solution ($config)"
           if ($env:SigningCertThumbprint) {
