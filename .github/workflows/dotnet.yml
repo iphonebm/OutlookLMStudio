@@ -45,17 +45,6 @@ jobs:
           "VSToolsPath=$vstools" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
           Write-Host "VSToolsPath set to $vstools"
 
-      - name: Debug: show VSToolsPath contents (first lines)
-        shell: pwsh
-        run: |
-          Write-Host "VSToolsPath = $env:VSToolsPath"
-          if (Test-Path $env:VSToolsPath) {
-            Get-ChildItem -Path $env:VSToolsPath -Recurse -Force -ErrorAction SilentlyContinue |
-              Select-Object FullName -First 50 | ForEach-Object { Write-Host $_.FullName }
-          } else {
-            Write-Host "VSToolsPath does not exist on runner"
-          }
-
       - name: Import signing certificate (if provided)
         shell: pwsh
         env:
