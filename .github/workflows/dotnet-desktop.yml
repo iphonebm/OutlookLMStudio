@@ -63,7 +63,7 @@ jobs:
         VSToolsPath: ${{ env.VSToolsPath }}
       run: |
         Write-Host "Using VSToolsPath: $env:VSToolsPath"
-        msbuild ${{ env.Solution_Name }} /p:Configuration=${{ matrix.configuration }} /p:VisualStudioVersion=17.0 /p:VSToolsPath="$env:VSToolsPath" /m
+        msbuild ${{ env.Solution_Name }} /p:Configuration=${{ matrix.configuration }} /p:VisualStudioVersion=17.0 /p:VSToolsPath="$env:VSToolsPath" /p:SignManifests=false /p:SignAssembly=false /m
 
     # Create Office Tools directory
     - name: Create Office Tools Directory
