@@ -45,7 +45,7 @@ jobs:
         "VSToolsPath=$vstools" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
         Write-Host "VSToolsPath set to $vstools"
 
-    - name: Debug: show VSToolsPath contents (first lines)
+    - name: Debug: show VSToolsPath contents
       shell: pwsh
       run: |
         Write-Host "VSToolsPath = $env:VSToolsPath"
