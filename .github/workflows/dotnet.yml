@@ -1,11 +1,11 @@
 # Workflow pour construire un projet VSTO / .NET Framework sur windows-latest
+name: VSTO CI Build
+
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
-name: VSTO CI Build
 
 jobs:
   build:
@@ -144,4 +144,6 @@ jobs:
           } else {
             Write-Host "No imported cert to remove"
           }
-          if ($env:IMPORTED_PFX_PATH -and (Test-Path $env:IMPORTED_PFX_PATH)) { Remove-Item -Path $env:IMPORTED_PFX_PATH -Force -ErrorAction SilentlyContinue }
+          if ($env:IMPORTED_PFX_PATH -and (Test-Path $env:IMPORTED_PFX_PATH)) {
+            Remove-Item -Path $env:IMPORTED_PFX_PATH -Force -ErrorAction SilentlyContinue
+          }
