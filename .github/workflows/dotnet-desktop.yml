@@ -1,40 +1,31 @@
-# Quick minimal workflow to build the project (fast, no signing)
-name: Quick VSTO Build (Release, no signing)
+name: Build OutlookLMStudio
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ master ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      Solution_Name: OutlookLMStudio.csproj
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+    - name: Check for Office Interop
+      run: |
+        if (-not (Test-Path "C:/Program Files (x86)/Microsoft Office")) {
+          Write-Host "Microsoft Office is not installed on the runner. Skipping build."
+          exit 0
+        }
 
-      - name: Quick Build (disable manifest/assembly signing)
-        shell: pwsh
-        run: |
-          $solution = '${{ env.Solution_Name }}'
-          Write-Host "Building $solution (Release) - signing disabled for CI"
-          msbuild $solution /t:Rebuild /p:Configuration=Release /p:VisualStudioVersion=17.0 /p:SignManifests=false /p:SignAssembly=false /m /verbosity:minimal
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3.1
 
-      - name: Upload build artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-release
-          path: |
-            **/bin/Release/**
-            **/obj/Release/**
+    - name: Restore NuGet packages
+      run: nuget restore OutlookLMStudio/OutlookLMStudio.csproj
+
+    - name: Build solution
+      run: msbuild OutlookLMStudio/OutlookLMStudio.csproj /p:Configuration=Release
