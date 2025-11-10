@@ -18,7 +18,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.3.1
 
     - name: Restore NuGet packages
-      run: nuget restore OutlookLMStudio/OutlookLMStudio.csproj
+      run: nuget restore OutlookLMStudio.csproj
 
     - name: Build solution
-      run: msbuild OutlookLMStudio/OutlookLMStudio.csproj /p:Configuration=Release
+      run: msbuild OutlookLMStudio.csproj /p:Configuration=Release
