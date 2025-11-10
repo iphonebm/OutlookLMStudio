@@ -286,7 +286,7 @@
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
    <PropertyGroup>
-     <!-- <SignManifests>true</SignManifests>
+     <!-- <SignManifests>true</SignManifests> -->
   </PropertyGroup>
   <PropertyGroup>
     <!-- <ManifestKeyFile>OutlookLMStudio_TemporaryKey.pfx</ManifestKeyFile> -->
