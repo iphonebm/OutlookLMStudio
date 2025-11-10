@@ -34,9 +34,36 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    # Setup Visual Studio Tools
-    - name: Setup VS Dev Environment
-      uses: seanmiddleditch/gha-setup-vsdevenv@v4
+    - name: Find Visual Studio installation and set VSToolsPath
+      shell: pwsh
+      run: |
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        if (-not (Test-Path $vswhere)) {
+          Write-Error "vswhere.exe not found"
+          exit 1
+        }
+        $installationPath = & $vswhere -latest -products * -property installationPath
+        if (-not $installationPath) {
+          Write-Error "No Visual Studio installation found via vswhere"
+          exit 1
+        }
+        Write-Host "Found Visual Studio at: $installationPath"
+        $vstools = Join-Path $installationPath "MSBuild\Microsoft\VisualStudio\v17.0"
+        # Export to GITHUB_ENV for later steps
+        "VSToolsPath=$vstools" | Out-File -Encoding utf8 -FilePath $env:GITHUB_ENV
+
+    - name: Restore (use msbuild restore for old csproj or dotnet restore if appropriate)
+      shell: pwsh
+      run: |
+        msbuild ${{ env.Solution_Name }} /t:Restore /p:Configuration=${{ matrix.configuration }}
+
+    - name: Build with MSBuild (use Visual Studio MSBuild)
+      shell: pwsh
+      env:
+        VSToolsPath: ${{ env.VSToolsPath }}
+      run: |
+        Write-Host "Using VSToolsPath: $env:VSToolsPath"
+        msbuild ${{ env.Solution_Name }} /p:Configuration=${{ matrix.configuration }} /p:VisualStudioVersion=17.0 /p:VSToolsPath="$env:VSToolsPath" /m
 
     # Create Office Tools directory
     - name: Create Office Tools Directory
