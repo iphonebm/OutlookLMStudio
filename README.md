@@ -1,5 +1,7 @@
 # 📧 OutlookLMStudio
 
+*Dernière mise à jour: 2025-11-10 | Last update: 2025-11-10*
+
 > FR: Générez automatiquement des réponses d'emails professionnelles dans Microsoft Outlook via des modèles IA locaux (LMStudio). 100% privé.
 > EN: Generate professional email replies in Microsoft Outlook using local AI language models through LMStudio. 100% private.
 
